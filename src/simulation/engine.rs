@@ -1,3 +1,7 @@
+use core::slice;
+use std::fs::File;
+use std::io::{self, Write};
+
 use crate::math::ray::Ray;
 use crate::simulation::result_image::{RGB256, ResultImage};
 use crate::math::vector::{Point3D, Vector3};
@@ -7,19 +11,21 @@ where
     F: Fn(&Ray,i32, i32, f32, f32) -> Vector3,
 {
     image: ResultImage,
-    simulate: F
+    simulate: F,
+    export_file_name: String
 }
 
 impl<F> Engine<F> 
 where 
     F: Fn(&Ray,i32, i32, f32, f32) -> Vector3,
 {
-    pub fn new(width_resolution: i32, aspect_ratio: f32, simulate: F) -> Self {
+    pub fn new(file_name: &str, width_resolution: i32, aspect_ratio: f32, simulate: F) -> Self {
         let width = width_resolution;
         let height = ((width_resolution as f32) / aspect_ratio) as i32;
         Self {
             image: ResultImage::new(width, height),
-            simulate
+            simulate,
+            export_file_name: String::from(file_name)
         }
     }
 
@@ -64,19 +70,29 @@ where
         }
     }
 
-    pub fn render(&self) {
+    pub fn render(&self) -> io::Result<()> {
+
+        let file = File::create(self.export_file_name.as_str())?;
+        let mut o = std::io::BufWriter::new(file);
+
         {
             let img = &self.image;
-            println!("P3");
-            println!("{} {}", img.width(), img.height());
-            println!("{}", 255);
+            write!(o, "P6\n{} {}\n255\n", img.width(), img.height())?;
         }
 
         {
             let pixels = &self.image.pixels;
-            for p in pixels {
-            println!("{} {} {}", p[0], p[1], p[2]);
-            }
+            
+            let ptr = pixels.as_ptr() as *const u8;
+            let len = pixels.len() * 3;
+
+            let bytes: &[u8] = unsafe {
+                slice::from_raw_parts(ptr, len)
+            };
+
+            o.write_all(bytes)?;
         }
+
+        Ok(())
     }
 }
