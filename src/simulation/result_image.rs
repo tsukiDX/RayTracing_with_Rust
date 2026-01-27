@@ -1,12 +1,12 @@
 use crate::math::array::Array;
 
-type VInt3 = Array<i32, 3>;
+pub type RGB256 = Array<u8, 3>;
 
 pub struct ResultImage {
     width: i32,
     height: i32,
     aspect_ratio: f32,
-    pub pixels: Vec<VInt3>
+    pub pixels: Vec<RGB256>
 }
 
 impl ResultImage {
@@ -15,7 +15,7 @@ impl ResultImage {
             width: w,
             height: h,
             aspect_ratio: w as f32 / h as f32,
-            pixels: vec![VInt3::new(); (w * h)as usize]
+            pixels: vec![RGB256::new(); (w * h)as usize]
         }
     }
 

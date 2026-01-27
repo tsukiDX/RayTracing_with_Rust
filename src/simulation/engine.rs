@@ -1,9 +1,6 @@
 use crate::math::ray::Ray;
-use crate::simulation::result_image::{ResultImage};
-use crate::math::array::Array;
+use crate::simulation::result_image::{RGB256, ResultImage};
 use crate::math::vector::{Point3D, Vector3};
-
-type VInt3 = Array<i32, 3>;
 
 pub struct Engine<F> 
 where 
@@ -56,11 +53,11 @@ where
                 let index = (x + y * width) as usize;
                 let color = self.run(&ray, x, y, u, v);
 
-                self.image.pixels[index] = VInt3 {
+                self.image.pixels[index] = RGB256 {
                     data: [
-                        (color.x * 255.999) as i32,
-                        (color.y * 255.999) as i32,
-                        (color.z * 255.999) as i32
+                        (color.x * 255.999) as u8,
+                        (color.y * 255.999) as u8,
+                        (color.z * 255.999) as u8
                     ]
                 };
             }
