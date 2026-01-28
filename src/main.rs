@@ -6,25 +6,16 @@ use math::ray::Ray;
 mod simulation;
 use simulation::engine::Engine;
 
+mod noise;
+use crate::noise::hash;
 
-const IMAGE_WIDTH : i32 = 256;
+
+const IMAGE_WIDTH : i32 = 1920;
 
 
 fn pixel_main(_ray: &Ray, _x: i32, _y: i32, _u: f32, _v: f32) -> Vector3 {
-        
-    let pos = Point3D::new(0., 0., -1.);
-
-    let t: Option<f32> = hit_sphere(_ray, &pos, 0.5);
-        
-    if let Some(v) = t {
-        let norm = (_ray.at(v) - pos).normalized();
-        (norm + 1.) * 0.5
-    } else {
-        let unit = _ray.direction().normalized();
-        let t = 0.5 * (unit.y + 1.0);
-
-        Vector3::lerp(&Vector3::new(1., 1., 1.), &Vector3::new(0.5, 0.7, 1.0), t)
-    }
+    let mut ret = Vector3::new(1., 1., 1.);
+    *ret.mono(hash::Xorshift::rand31(_u * 0.00000001, _v * 0.00000001, 0.))
 }
 
 fn main() {

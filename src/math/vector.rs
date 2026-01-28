@@ -18,6 +18,14 @@ impl Vector3 {
         }
     }
 
+    pub fn mono(&mut self, v: f32) -> &mut Self {
+        self.x = v;
+        self.y = v;
+        self.z = v;
+
+        self
+    }
+
     pub fn zero(&mut self) -> &mut Self {
         self.x = 0.;
         self.y = 0.;
