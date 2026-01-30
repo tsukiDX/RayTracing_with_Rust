@@ -7,6 +7,7 @@ mod simulation;
 use simulation::engine::Engine;
 
 mod noise;
+use crate::math::vector::Vector2;
 use crate::noise::hash;
 
 
@@ -15,7 +16,11 @@ const IMAGE_WIDTH : i32 = 1920;
 
 fn pixel_main(_ray: &Ray, _x: i32, _y: i32, _u: f32, _v: f32) -> Vector3 {
     let mut ret = Vector3::new(1., 1., 1.);
-    *ret.mono(hash::Xorshift::rand31(_u * 0.00000001, _v * 0.00000001, 0.))
+
+    let t = 10.;
+    ret.mono(hash::Gnoise::rand31(&Vector3{x: _u * t, y: _v * t, z: 0.}));
+
+    ret
 }
 
 fn main() {
