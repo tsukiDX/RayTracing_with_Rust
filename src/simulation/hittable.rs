@@ -80,7 +80,7 @@ impl Hittable for Sphere {
         let oc = ray.origin() - self.center;
 
         let a = ray.direction().magnitude_squared();
-        let half_b = Vector3::dot(oc, ray.direction());
+        let half_b = Vector3::dot(&oc, ray.direction());
         let c = oc.magnitude_squared() - self.radius * self.radius;
 
         let discriminant = half_b * half_b - a * c;

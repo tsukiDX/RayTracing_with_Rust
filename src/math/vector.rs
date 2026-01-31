@@ -24,11 +24,12 @@ pub struct Vector4
     pub w: f32
 }
 
+#[allow(dead_code)]
 impl Vector2 {
-    pub fn new(v: f32) -> Self {
+    pub fn new(x: f32, y: f32) -> Self {
         Self {
-            x: v,
-            y: v
+            x: x,
+            y: y
         }
     }
 
@@ -46,15 +47,15 @@ impl Vector2 {
         self
     }
 
-    pub fn magnitude_squared(self) -> f32 {
+    pub fn magnitude_squared(&self) -> f32 {
         self.x * self.x + self.y * self.y
     }
 
-    pub fn magnitude(self) -> f32 {
+    pub fn magnitude(&self) -> f32 {
         (self.x * self.x + self.y * self.y).sqrt()
     }
 
-    pub fn dot(self, other: Self) -> f32 {
+    pub fn dot(&self, other: &Self) -> f32 {
         self.x * other.x + self.y * other.y
     }
 
@@ -66,7 +67,7 @@ impl Vector2 {
         self
     }
 
-    pub fn normalized(self) -> Self {
+    pub fn normalized(&self) -> Self {
         let d = 1. / (self.x * self.x + self.y * self.y).sqrt();
         Self {
             x: self.x * d,
@@ -97,6 +98,13 @@ impl Vector2 {
             x: self.x.fract(),
             y: self.y.fract()
         }
+    }
+
+    pub fn rot(&self, t: f32) -> Self {
+        let cos = t.cos();
+        let sin = t.sin();
+
+        Self { x: cos * self.x - sin * self.y, y: sin * self.x + cos * self.y }
     }
 
     pub fn zero() -> Self {
@@ -300,7 +308,7 @@ impl ops::Neg for Vector2 {
 
 pub type Point2D = Vector2;
 
-
+#[allow(dead_code)]
 impl Vector3 {
 
     pub fn new(x: f32, y: f32, z: f32) -> Self {
@@ -327,15 +335,15 @@ impl Vector3 {
         self
     }
 
-    pub fn magnitude_squared(self) -> f32 {
+    pub fn magnitude_squared(&self) -> f32 {
         self.x * self.x + self.y * self.y + self.z * self.z
     }
 
-    pub fn magnitude(self) -> f32 {
+    pub fn magnitude(&self) -> f32 {
         (self.x * self.x + self.y * self.y + self.z * self.z).sqrt()
     }
 
-    pub fn dot(self, other: Self) -> f32 {
+    pub fn dot(&self, other: Self) -> f32 {
         self.x * other.x + self.y * other.y + self.z * other.z
     }
 
@@ -348,7 +356,7 @@ impl Vector3 {
         self
     }
 
-    pub fn normalized(self) -> Self {
+    pub fn normalized(&self) -> Self {
         let d = 1. / (self.x * self.x + self.y * self.y + self.z * self.z).sqrt();
         Self {
             x: self.x * d,
@@ -357,7 +365,7 @@ impl Vector3 {
         }
     }
 
-    pub fn cross(self, other: Self) -> Self {
+    pub fn cross(&self, other: Self) -> Self {
         Self {
             x: self.y * other.z - self.z * other.y,
             y: self.z * other.x - self.x * other.z,
@@ -369,7 +377,7 @@ impl Vector3 {
         a - (a - b) * t
     }
 
-    pub fn floor(self) -> Self {
+    pub fn floor(&self) -> Self {
         Self {
             x: self.x.floor(),
             y: self.y.floor(),
@@ -377,7 +385,7 @@ impl Vector3 {
         }
     }
 
-    pub fn ceil(self) -> Self {
+    pub fn ceil(&self) -> Self {
         Self {
             x: self.x.ceil(),
             y: self.y.ceil(),
@@ -385,7 +393,7 @@ impl Vector3 {
         }
     }
 
-    pub fn fract(self) -> Self {
+    pub fn fract(&self) -> Self {
         Self {
             x: self.x.fract(),
             y: self.y.fract(),
@@ -419,6 +427,21 @@ impl Vector3 {
             y: 0.0,
             z: 1.0
         }
+    }
+
+    pub fn rotx(&self, t: f32) -> Self {
+        let p = Vector2::rot(&Vector2 { x: self.y, y: self.z }, t);
+        Self { x: self.x, y: p.x, z: p.y }
+    }
+
+    pub fn roty(&self, t: f32) -> Self {
+        let p = Vector2::rot(&Vector2 { x: self.x, y: self.z }, t);
+        Self { x: p.x, y: self.y, z: p.y }
+    }
+
+    pub fn rotz(&self, t: f32) -> Self {
+        let p = Vector2::rot(&Vector2 { x: self.x, y: self.y }, t);
+        Self { x: self.x, y: p.x, z: p.y }
     }
 }
 
