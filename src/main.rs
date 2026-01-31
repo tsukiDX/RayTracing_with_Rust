@@ -1,30 +1,38 @@
 mod math;
-use math::vector::Point3D;
 use math::vector::Vector3;
-use math::ray::Ray;
+use math::vector::Point3D;
 
 mod simulation;
+use simulation::ray::Ray;
 use simulation::engine::Engine;
+use simulation::hittable::HittableList;
+use simulation::hittable::Sphere;
 
-mod noise;
-use crate::math::vector::Vector2;
-use crate::noise::hash;
+use crate::simulation::hittable::Hittable;
 
 
 const IMAGE_WIDTH : i32 = 1920;
 
 
-fn pixel_main(_ray: &Ray, _x: i32, _y: i32, _u: f32, _v: f32) -> Vector3 {
-    let mut ret = Vector3::new(1., 1., 1.);
+fn pixel_main(_ray: &Ray, _world: &HittableList, _x: i32, _y: i32, _u: f32, _v: f32) -> Vector3 {
+    
+    let t = _world.hit(_ray, 0., 1000.0);
 
-    let t = 10.;
-    ret.mono(hash::Gnoise::rand31(&Vector3{x: _u * t, y: _v * t, z: 0.}));
+    if let Some(v) = t {
+        (v.normal() + 1.) * 0.5
+    } else {
+        let unit = _ray.direction().normalized();
+        let t = 0.5 * (unit.y + 1.0);
 
-    ret
+        Vector3::lerp(Vector3{x: 1., y: 1., z: 1.}, Vector3{x: 0.5, y: 0.7, z: 1.}, t)
+    }
 }
 
 fn main() {
     let engine= &mut Engine::new("output.ppm", IMAGE_WIDTH, 16. / 9., pixel_main);
+
+    engine.world().add(Sphere::new(Point3D::new(0., 0., -1.), 0.5));
+    engine.world().add(Sphere::new(Point3D::new(0.,-100.5,-1.), 100.));
 
     eprintln!("[INFO] Simulation started.");
     engine.simulate();
@@ -33,47 +41,4 @@ fn main() {
     eprintln!("[INFO] Render to PPM started.");
     engine.render();
     eprintln!("[INFO] Render to PPM completed.");
-}
-
-fn hit_sphere(ray: &Ray, p: &Point3D, radius: f32) -> Option<f32> {
-    let oc = ray.origin() - *p;
-
-    // let t = solve_quadratic(
-    //     Vector3::dot(&ray.direction(), &ray.direction()), 
-    //     2. * Vector3::dot(&oc, &ray.direction()),
-    //     Vector3::dot(&oc, &oc) - radius * radius
-    // );
-
-    let t = solve_quadratic_half(
-        ray.direction().magnitude_squared(),
-        Vector3::dot(&oc, &ray.direction()),
-        oc.magnitude_squared() - radius * radius
-    );
-
-    if t > 0. {
-        Some(t)
-    } else {
-        None
-    }
-}
-
-#[allow(dead_code)]
-fn solve_quadratic(a: f32, b: f32, c: f32) -> f32 {
-    let discriminant = b*b - 4.*a*c;
-
-    if discriminant >= 0. {
-        (-b - discriminant.sqrt()) / (2.0 * a)
-    } else {
-        -1.0
-    }
-}
-
-fn solve_quadratic_half(a: f32, h: f32, c:f32) -> f32 {
-    let discriminant = h * h - a * c;
-
-    if discriminant >= 0. {
-        (-h - discriminant.sqrt()) / a
-    } else {
-        -1.0
-    }
 }

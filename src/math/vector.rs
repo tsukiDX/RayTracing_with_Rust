@@ -25,23 +25,16 @@ pub struct Vector4
 }
 
 impl Vector2 {
-
-    pub fn new(x: f32, y: f32) -> Self {
+    pub fn new(v: f32) -> Self {
         Self {
-            x, y
+            x: v,
+            y: v
         }
     }
 
     pub fn mono(&mut self, v: f32) -> &mut Self {
         self.x = v;
         self.y = v;
-
-        self
-    }
-
-    pub fn zero(&mut self) -> &mut Self {
-        self.x = 0.;
-        self.y = 0.;
 
         self
     }
@@ -53,15 +46,15 @@ impl Vector2 {
         self
     }
 
-    pub fn magnitude_squared(&self) -> f32 {
+    pub fn magnitude_squared(self) -> f32 {
         self.x * self.x + self.y * self.y
     }
 
-    pub fn magnitude(&self) -> f32 {
+    pub fn magnitude(self) -> f32 {
         (self.x * self.x + self.y * self.y).sqrt()
     }
 
-    pub fn dot(&self, other: &Self) -> f32 {
+    pub fn dot(self, other: Self) -> f32 {
         self.x * other.x + self.y * other.y
     }
 
@@ -73,7 +66,7 @@ impl Vector2 {
         self
     }
 
-    pub fn normalized(&self) -> Self {
+    pub fn normalized(self) -> Self {
         let d = 1. / (self.x * self.x + self.y * self.y).sqrt();
         Self {
             x: self.x * d,
@@ -81,8 +74,8 @@ impl Vector2 {
         }
     }
 
-    pub fn lerp(a: &Self, b: &Self, t: f32) -> Self {
-        *a - (*a - *b) * t
+    pub fn lerp(a: Self, b: Self, t: f32) -> Self {
+        a - (a - b) * t
     }
 
     pub fn floor(&self) -> Self {
@@ -104,6 +97,18 @@ impl Vector2 {
             x: self.x.fract(),
             y: self.y.fract()
         }
+    }
+
+    pub fn zero() -> Self {
+        Self { x: 0., y: 0. }
+    }
+
+    pub fn right() -> Self {
+        Self { x: 1.0, y: 0.0 }
+    }
+
+    pub fn up() -> Self {
+        Self {x: 0.0, y: 1.0}
     }
 }
 
@@ -128,18 +133,6 @@ impl ops::AddAssign for Vector2 {
     fn add_assign(&mut self, rhs: Self) {
         self.x += rhs.x;
         self.y += rhs.y;
-    }
-}
-
-// --- vector move ---
-impl ops::Add<&Vector2> for &Vector2 {
-    type Output = Vector2;
-
-    fn add(self, rhs: &Vector2) -> Self::Output {
-        Vector2 {
-            x: self.x + rhs.x,
-            y: self.y + rhs.y,
-        }
     }
 }
 
@@ -181,18 +174,6 @@ impl ops::SubAssign for Vector2 {
     fn sub_assign(&mut self, rhs: Self) {
         self.x -= rhs.x;
         self.y -= rhs.y;
-    }
-}
-
-// --- vector move ---
-impl ops::Sub<&Vector2> for &Vector2 {
-    type Output = Vector2;
-
-    fn sub(self, rhs: &Vector2) -> Self::Output {
-        Vector2 {
-            x: self.x - rhs.x,
-            y: self.y - rhs.y,
-        }
     }
 }
 
@@ -238,17 +219,6 @@ impl ops::MulAssign for Vector2 {
     }
 }
 
-// --- vector move ---
-impl ops::Mul<&Vector2> for &Vector2 {
-    type Output = Vector2;
-
-    fn mul(self, rhs: &Vector2) -> Self::Output {
-        Vector2 {
-            x: self.x * rhs.x,
-            y: self.y * rhs.y,
-        }
-    }
-}
 
 // --- scalar ---
 impl ops::Mul<f32> for Vector2 {
@@ -292,17 +262,6 @@ impl ops::DivAssign for Vector2 {
     }
 }
 
-// --- vector move ---
-impl ops::Div<&Vector2> for &Vector2 {
-    type Output = Vector2;
-
-    fn div(self, rhs: &Vector2) -> Self::Output {
-        Vector2 {
-            x: self.x / rhs.x,
-            y: self.y / rhs.y,
-        }
-    }
-}
 
 // --- scalar ---
 impl ops::Div<f32> for Vector2 {
@@ -327,17 +286,28 @@ impl ops::DivAssign<f32> for Vector2 {
     }
 }
 
+impl ops::Neg for Vector2 {
+    type Output = Self;
+
+    fn neg(self) -> Self::Output {
+        Self {
+            x: -self.x,
+            y: -self.y
+        }
+    }
+}
+
 
 pub type Point2D = Vector2;
 
 
 impl Vector3 {
 
-    pub fn new(vx: f32, vy: f32, vz: f32) -> Self {
+    pub fn new(x: f32, y: f32, z: f32) -> Self {
         Self {
-            x: vx,
-            y: vy,
-            z: vz
+            x,
+            y,
+            z
         }
     }
 
@@ -345,14 +315,6 @@ impl Vector3 {
         self.x = v;
         self.y = v;
         self.z = v;
-
-        self
-    }
-
-    pub fn zero(&mut self) -> &mut Self {
-        self.x = 0.;
-        self.y = 0.;
-        self.z = 0.;
 
         self
     }
@@ -365,15 +327,15 @@ impl Vector3 {
         self
     }
 
-    pub fn magnitude_squared(&self) -> f32 {
+    pub fn magnitude_squared(self) -> f32 {
         self.x * self.x + self.y * self.y + self.z * self.z
     }
 
-    pub fn magnitude(&self) -> f32 {
+    pub fn magnitude(self) -> f32 {
         (self.x * self.x + self.y * self.y + self.z * self.z).sqrt()
     }
 
-    pub fn dot(&self, other: &Self) -> f32 {
+    pub fn dot(self, other: Self) -> f32 {
         self.x * other.x + self.y * other.y + self.z * other.z
     }
 
@@ -386,7 +348,7 @@ impl Vector3 {
         self
     }
 
-    pub fn normalized(&self) -> Self {
+    pub fn normalized(self) -> Self {
         let d = 1. / (self.x * self.x + self.y * self.y + self.z * self.z).sqrt();
         Self {
             x: self.x * d,
@@ -395,7 +357,7 @@ impl Vector3 {
         }
     }
 
-    pub fn cross(&self, other: &Self) -> Self {
+    pub fn cross(self, other: Self) -> Self {
         Self {
             x: self.y * other.z - self.z * other.y,
             y: self.z * other.x - self.x * other.z,
@@ -403,11 +365,11 @@ impl Vector3 {
         }
     }
 
-    pub fn lerp(a: &Self, b: &Self, t: f32) -> Self {
-        *a - (*a - *b) * t
+    pub fn lerp(a: Self, b: Self, t: f32) -> Self {
+        a - (a - b) * t
     }
 
-    pub fn floor(&self) -> Self {
+    pub fn floor(self) -> Self {
         Self {
             x: self.x.floor(),
             y: self.y.floor(),
@@ -415,7 +377,7 @@ impl Vector3 {
         }
     }
 
-    pub fn ceil(&self) -> Self {
+    pub fn ceil(self) -> Self {
         Self {
             x: self.x.ceil(),
             y: self.y.ceil(),
@@ -423,11 +385,39 @@ impl Vector3 {
         }
     }
 
-    pub fn fract(&self) -> Self {
+    pub fn fract(self) -> Self {
         Self {
             x: self.x.fract(),
             y: self.y.fract(),
             z: self.z.fract()
+        }
+    }
+
+    pub fn zero() -> Self {
+        Self { x: 0., y: 0., z: 0. }
+    }
+
+    pub fn right() -> Self {
+        Self {
+            x: 1.0,
+            y: 0.0,
+            z: 0.0
+        }
+    }
+
+    pub fn up() -> Self {
+        Self {
+            x: 0.0,
+            y: -1.0,
+            z: 0.0
+        }
+    }
+
+    pub fn forward() -> Self {
+        Self {
+            x: 0.0,
+            y: 0.0,
+            z: 1.0
         }
     }
 }
@@ -455,19 +445,6 @@ impl ops::AddAssign for Vector3 {
         self.x += rhs.x;
         self.y += rhs.y;
         self.z += rhs.z;
-    }
-}
-
-// --- vector move ---
-impl ops::Add<&Vector3> for &Vector3 {
-    type Output = Vector3;
-
-    fn add(self, rhs: &Vector3) -> Self::Output {
-        Vector3 {
-            x: self.x + rhs.x,
-            y: self.y + rhs.y,
-            z: self.z + rhs.z
-        }
     }
 }
 
@@ -513,19 +490,6 @@ impl ops::SubAssign for Vector3 {
         self.x -= rhs.x;
         self.y -= rhs.y;
         self.z -= rhs.z;
-    }
-}
-
-// --- vector move ---
-impl ops::Sub<&Vector3> for &Vector3 {
-    type Output = Vector3;
-
-    fn sub(self, rhs: &Vector3) -> Self::Output {
-        Vector3 {
-            x: self.x - rhs.x,
-            y: self.y - rhs.y,
-            z: self.z - rhs.z
-        }
     }
 }
 
@@ -575,19 +539,6 @@ impl ops::MulAssign for Vector3 {
     }
 }
 
-// --- vector move ---
-impl ops::Mul<&Vector3> for &Vector3 {
-    type Output = Vector3;
-
-    fn mul(self, rhs: &Vector3) -> Self::Output {
-        Vector3 {
-            x: self.x * rhs.x,
-            y: self.y * rhs.y,
-            z: self.z * rhs.z
-        }
-    }
-}
-
 // --- scalar ---
 impl ops::Mul<f32> for Vector3 {
     type Output = Vector3;
@@ -634,19 +585,6 @@ impl ops::DivAssign for Vector3 {
     }
 }
 
-// --- vector move ---
-impl ops::Div<&Vector3> for &Vector3 {
-    type Output = Vector3;
-
-    fn div(self, rhs: &Vector3) -> Self::Output {
-        Vector3 {
-            x: self.x / rhs.x,
-            y: self.y / rhs.y,
-            z: self.z / rhs.z
-        }
-    }
-}
-
 // --- scalar ---
 impl ops::Div<f32> for Vector3 {
     type Output = Vector3;
@@ -672,6 +610,18 @@ impl ops::DivAssign<f32> for Vector3 {
     }
 }
 
+impl ops::Neg for Vector3 {
+    type Output = Self;
+
+    fn neg(self) -> Self::Output {
+        Self {
+            x: -self.x,
+            y: -self.y,
+            z: -self.z
+        }
+    }
+}
+
 
 pub type Point3D = Vector3;
 
@@ -679,9 +629,12 @@ pub type Point3D = Vector3;
 
 impl Vector4 {
 
-    pub fn new(x: f32, y: f32, z: f32, w: f32) -> Self {
+    pub fn new(v: f32) -> Self {
         Self {
-            x, y, z, w
+            x: v,
+            y: v,
+            z: v,
+            w: v
         }
     }
 
@@ -690,15 +643,6 @@ impl Vector4 {
         self.y = v;
         self.z = v;
         self.w = v;
-
-        self
-    }
-
-    pub fn zero(&mut self) -> &mut Self {
-        self.x = 0.;
-        self.y = 0.;
-        self.z = 0.;
-        self.w = 0.;
 
         self
     }
@@ -712,15 +656,15 @@ impl Vector4 {
         self
     }
 
-    pub fn magnitude_squared(&self) -> f32 {
+    pub fn magnitude_squared(self) -> f32 {
         self.x * self.x + self.y * self.y + self.z * self.z + self.w * self.w
     }
 
-    pub fn magnitude(&self) -> f32 {
+    pub fn magnitude(self) -> f32 {
         (self.x * self.x + self.y * self.y + self.z * self.z + self.w * self.w).sqrt()
     }
 
-    pub fn dot(&self, other: &Self) -> f32 {
+    pub fn dot(self, other: Self) -> f32 {
         self.x * other.x + self.y * other.y + self.z * other.z + self.w * other.w
     }
 
@@ -734,7 +678,7 @@ impl Vector4 {
         self
     }
 
-    pub fn normalized(&self) -> Self {
+    pub fn normalized(self) -> Self {
         let d = 1. / (self.x * self.x + self.y * self.y + self.z * self.z + self.w * self.w).sqrt();
         Self {
             x: self.x * d,
@@ -744,11 +688,11 @@ impl Vector4 {
         }
     }
 
-    pub fn lerp(a: &Self, b: &Self, t: f32) -> Self {
-        *a - (*a - *b) * t
+    pub fn lerp(a: Self, b: Self, t: f32) -> Self {
+        a - (a - b) * t
     }
 
-    pub fn floor(&self) -> Self {
+    pub fn floor(self) -> Self {
         Self {
             x: self.x.floor(),
             y: self.y.floor(),
@@ -757,7 +701,7 @@ impl Vector4 {
         }
     }
 
-    pub fn ceil(&self) -> Self {
+    pub fn ceil(self) -> Self {
         Self {
             x: self.x.ceil(),
             y: self.y.ceil(),
@@ -766,13 +710,17 @@ impl Vector4 {
         }
     }
 
-    pub fn fract(&self) -> Self {
+    pub fn fract(self) -> Self {
         Self {
             x: self.x.fract(),
             y: self.y.fract(),
             z: self.z.fract(),
             w: self.w.fract()
         }
+    }
+
+    pub fn zero() -> Self {
+        Self { x: 0., y: 0., z: 0., w: 0. }
     }
 }
 
@@ -801,20 +749,6 @@ impl ops::AddAssign for Vector4 {
         self.y += rhs.y;
         self.z += rhs.z;
         self.w += rhs.w;
-    }
-}
-
-// --- vector move ---
-impl ops::Add<&Vector4> for &Vector4 {
-    type Output = Vector4;
-
-    fn add(self, rhs: &Vector4) -> Self::Output {
-        Vector4 {
-            x: self.x + rhs.x,
-            y: self.y + rhs.y,
-            z: self.z + rhs.z,
-            w: self.w + rhs.w
-        }
     }
 }
 
@@ -864,20 +798,6 @@ impl ops::SubAssign for Vector4 {
         self.y -= rhs.y;
         self.z -= rhs.z;
         self.w -= rhs.w;
-    }
-}
-
-// --- vector move ---
-impl ops::Sub<&Vector4> for &Vector4 {
-    type Output = Vector4;
-
-    fn sub(self, rhs: &Vector4) -> Self::Output {
-        Vector4 {
-            x: self.x - rhs.x,
-            y: self.y - rhs.y,
-            z: self.z - rhs.z,
-            w: self.w - rhs.w
-        }
     }
 }
 
@@ -931,20 +851,6 @@ impl ops::MulAssign for Vector4 {
     }
 }
 
-// --- vector move ---
-impl ops::Mul<&Vector4> for &Vector4 {
-    type Output = Vector4;
-
-    fn mul(self, rhs: &Vector4) -> Self::Output {
-        Vector4 {
-            x: self.x * rhs.x,
-            y: self.y * rhs.y,
-            z: self.z * rhs.z,
-            w: self.w * rhs.w
-        }
-    }
-}
-
 // --- scalar ---
 impl ops::Mul<f32> for Vector4 {
     type Output = Vector4;
@@ -995,20 +901,6 @@ impl ops::DivAssign for Vector4 {
     }
 }
 
-// --- vector move ---
-impl ops::Div<&Vector4> for &Vector4 {
-    type Output = Vector4;
-
-    fn div(self, rhs: &Vector4) -> Self::Output {
-        Vector4 {
-            x: self.x / rhs.x,
-            y: self.y / rhs.y,
-            z: self.z / rhs.z,
-            w: self.w / rhs.w
-        }
-    }
-}
-
 // --- scalar ---
 impl ops::Div<f32> for Vector4 {
     type Output = Vector4;
@@ -1033,5 +925,18 @@ impl ops::DivAssign<f32> for Vector4 {
         self.y *= d;
         self.z *= d;
         self.w *= d;
+    }
+}
+
+impl ops::Neg for Vector4 {
+    type Output = Vector4;
+
+    fn neg(self) -> Self::Output {
+        Self {
+            x: -self.x,
+            y: -self.y,
+            z: -self.z,
+            w: -self.w
+        }
     }
 }
