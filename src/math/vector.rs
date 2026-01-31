@@ -24,6 +24,8 @@ pub struct Vector4
     pub w: f32
 }
 
+pub type Color = Vector3;
+
 #[allow(dead_code)]
 impl Vector2 {
     pub fn new(x: f32, y: f32) -> Self {

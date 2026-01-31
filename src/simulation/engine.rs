@@ -5,30 +5,39 @@ use std::io::{self, Write};
 use crate::simulation::ray::Ray;
 use crate::simulation::hittable::{HittableList};
 use crate::simulation::result_image::{RGB256, ResultImage};
-use crate::math::vector::{Point3D, Vector3};
+use crate::math::vector::{Color, Vector2, Vector3};
+use crate::simulation::camera::Camera;
+
+use crate::math::noise::hash::{Vnoise};
 
 pub struct Engine<F> 
 where 
-    F: Fn(&Ray, &HittableList, i32, i32, f32, f32) -> Vector3,
+    F: Fn(&Ray, &HittableList, i32, i32, f32, f32, i32) -> Color,
 {
     image: ResultImage,
     simulate: F,
     export_file_name: String,
-    world: HittableList
+    world: HittableList,
+    camera: Camera,
+    sample_per_pixel: i32,
+    trace: i32
 }
 
 impl<F> Engine<F> 
 where 
-    F: Fn(&Ray, &HittableList, i32, i32, f32, f32) -> Vector3,
+    F: Fn(&Ray, &HittableList, i32, i32, f32, f32, i32) -> Color,
 {
-    pub fn new(file_name: &str, width_resolution: i32, aspect_ratio: f32, simulate: F) -> Self {
+    pub fn new(file_name: &str, width_resolution: i32, aspect_ratio: f32, simulate: F, sample_per_pixel: i32, trace: i32) -> Self {
         let width = width_resolution;
         let height = ((width_resolution as f32) / aspect_ratio) as i32;
         Self {
             image: ResultImage::new(width, height),
             simulate,
             export_file_name: String::from(file_name),
-            world: HittableList::default()
+            world: HittableList::default(),
+            camera: Camera::new(aspect_ratio),
+            sample_per_pixel,
+            trace
         }
     }
 
@@ -37,8 +46,8 @@ where
         &mut self.world
     }
 
-    fn run(&self, ray: &Ray, world: &HittableList, x: i32, y: i32, u: f32, v: f32) -> Vector3 {
-        (self.simulate)(ray, world, x, y, u, v)
+    fn execute_pixel(&self, ray: &Ray, world: &HittableList, x: i32, y: i32, u: f32, v: f32, ray_step: i32) -> Color {
+        (self.simulate)(ray, world, x, y, u, v, ray_step)
     }
 
     pub fn simulate(&mut self) {
@@ -46,32 +55,29 @@ where
         let width = self.image.width();
         let height = self.image.height();
 
-        let viewport_height: f32 = 2.0;
-        let viewport_width: f32 = self.image.aspect_ratio() * viewport_height;
-        let focal_len = 1.0;
+        let sample_scale = 1. / self.sample_per_pixel as f32;
 
-        let origin = Point3D::zero();
-        let horizontal = Vector3{x: viewport_width, y: 0., z: 0.};
-        let vertical = Vector3{x: 0., y: -viewport_height, z: 0.};
-
-        let lower_left_corner = origin - horizontal * 0.5 - vertical * 0.5 - Vector3{x: 0., y: 0., z: focal_len};
+        let resw = 1.0 / (self.image.width() - 1) as f32;
+        let resh = 1.0 / (self.image.height() - 1) as f32;
 
         for y in 0..height {
             for x in 0..width {
+                let mut pixel_color = Color::new(0., 0., 0.);
 
-                let u: f32 = (x as f32) / ((self.image.width() - 1) as f32);
-                let v: f32 = (y as f32) / ((self.image.height() - 1) as f32);
+                for s in 0..self.sample_per_pixel {
+                    let u: f32 = (x as f32 + (Vnoise::rand21(Vector2::new(s as f32, 0.)) - 0.5) * 2.0) * resw;
+                    let v: f32 = (y as f32 + (Vnoise::rand21(Vector2::new(0., s as f32)) - 0.5) * 2.0) * resh;
 
-                let ray = Ray::new(&origin, &(lower_left_corner + horizontal * u + vertical * v - origin));
+                    let ray: Ray = self.camera.get_ray(u, v);
 
-                let index = (x + y * width) as usize;
-                let color = self.run(&ray, &self.world, x, y, u, v);
+                    pixel_color += self.execute_pixel(&ray, &self.world, x, y, u, v, self.trace);
+                }
 
-                self.image.pixels[index] = RGB256 {
+                self.image.pixels[(x + y * width) as usize] = RGB256 {
                     data: [
-                        (color.x * 255.999) as u8,
-                        (color.y * 255.999) as u8,
-                        (color.z * 255.999) as u8
+                        (pixel_color.x * 255.999 * sample_scale) as u8,
+                        (pixel_color.y * 255.999 * sample_scale) as u8,
+                        (pixel_color.z * 255.999 * sample_scale) as u8
                     ]
                 };
             }
